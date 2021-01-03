@@ -62,7 +62,7 @@
 			{
 				e.preventDefault();
 				var q = document.getElementById('q').value;
-				window.location.href = "<?= LIBRIVOX_CATALOG_SEARCH;  ?>/q/" + q;
+				window.location.href = "<?= LIBRIVOX_CATALOG_SEARCH;  ?>/?search_form=get_results&q=" + encodeURIComponent(q);
 			}
 			
 		</script>
