@@ -221,7 +221,7 @@ add_action('admin_head', 'hide_admin_menu');
 		$image = (empty($item['coverart_thumbnail']))? LIBRIVOX_CATALOG_URL .'images/book-cover-default-65x65.gif': $item['coverart_thumbnail'] ;
 		//$image = ($item['status'] == 'complete') ? $image  : LIBRIVOX_CATALOG_URL .'images/book-cover-in-progress-65x65.gif';			
 
-		$html .= '<a href="#" class="book-cover"><img src="'. $image .'" alt="book-cover-65x65" width="65" height="65" /></a>';	
+		$html .= '<a href="' . $item['url_librivox'] . '" class="book-cover"><img src="'. $image .'" alt="book-cover-65x65" width="65" height="65" /></a>';
 
 		$authors = author_list($item['authors']);
 
