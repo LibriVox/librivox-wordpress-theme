@@ -198,93 +198,32 @@ function hide_admin_menu() {
  
 add_action('admin_head', 'hide_admin_menu');  
 
-
-
-	// Librivox Catalog Feed items
-	function format_results($items)
-	{
-		$html = '';
-		foreach ($items as $key => $item) {
-			$html .= format_item($item);
-		}
-		return $html;
-
+// Librivox Catalog Feed items
+function format_results($items)
+{
+	$html = '';
+	foreach ($items as $key => $item) {
+		$html .= format_item($item);
 	}
+	return $html;
+}
 
-	// This is a copy (with some front page changes) of the views/items_blades/title_blades, if you should ever decide to rewrite & combine
+// Lets try to re-use as much formatting code from catalog as possible such as
+// create_full_title and format_authors.
+require_once('../catalog/application/helpers/previewer_helper.php');
+function base_url() { return LIBRIVOX_CATALOG_URL; }
 
-	function format_item($item)
-	{
-
-		$html = '<li class="catalog-result">';
-
-		$image = (empty($item['coverart_thumbnail']))? LIBRIVOX_CATALOG_URL .'images/book-cover-default-65x65.gif': $item['coverart_thumbnail'] ;
-		//$image = ($item['status'] == 'complete') ? $image  : LIBRIVOX_CATALOG_URL .'images/book-cover-in-progress-65x65.gif';			
-
-		$html .= '<a href="' . $item['url_librivox'] . '" class="book-cover"><img src="'. $image .'" alt="book-cover-65x65" width="65" height="65" /></a>';
-
-		$authors = author_list($item['authors']);
-
-		$html .= '<div class="result-data">
-					<h3><a href="' . $item['url_librivox'] .' ">'.create_full_title($item).'</a></h3>
-					<p class="book-author"> ' . $authors . '</p>
-					<p class="book-meta"> ' . 'Complete '. ' | ' . ucwords($item['project_type']) . ' | ' . $item['language'] . '</p>
-				</div>';	
-
-		$html .= '</li>';
-
-		return $html;
-
-	}
-
-	function create_full_title($project)
-	{
-		if (is_array($project)) $project = (object) $project;
-
-		$project->full_title = (!empty($project->title_prefix))? $project->title_prefix.' ': '';    
-	    return $project->full_title .= $project->title;
-	}
-
-	function author_list($author_list='')
-	{
-
-		if (empty($author_list)) return '';
-
-		foreach ($author_list as $key => $author) {
-			$authors[] = '<a href="'.LIBRIVOX_CATALOG_URL.'author/'.$author['id'].'">'.$author['author'] . ' <span class="dod-dob">' . build_author_years((object) $author) .'</span></a>';  
-		}
-		return implode(', ' , $authors);
-	}
-
-	function build_author_years($author)
-	{
-		$author->dob = (empty($author->dob)) ? ' ': $author->dob;
-		$author->dod = (empty($author->dod)) ? ' ': $author->dod;
-
-		return sprintf("(%s)", implode(' - ', array($author->dob, $author->dod)));
-
-	}
-
-	// not in use, but we may want it back - our WP git repo is a little "unreliable"
-	function create_days_ago($project)
-	{
-		$project = (object) $project;
-
-		$date = new DateTime($project->date_catalog);
-		$date->format('Y-m-d');
-
-		$now = new DateTime();
-
-		$interval = $date->diff($now);
-		//var_dump($interval);
-
-		if ($interval->days < 1) $days_ago = 'Released today';
-		if ($interval->days == 1) $days_ago = 'Released yesterday';
-		if ($interval->days > 1) $days_ago = 'Released ' . $interval->days . ' days ago';
-
-		return $days_ago; 
-
-	}
-
-
-?>
+// This function mimics title_blade.php from catalog (it would be nice if we could
+// also re-use that code directly somehow so they stay consistent).
+function format_item($item)
+{
+	$image = empty($item['coverart_thumbnail']) ? LIBRIVOX_CATALOG_URL . 'images/book-cover-default-65x65.gif' : $item['coverart_thumbnail'];
+	$html = '<li class="catalog-result">';
+	$html .= '<a href="' . $item['url_librivox'] . '" class="book-cover"><img src="'. $image .'" alt="book-cover-65x65" width="65" height="65" /></a>';
+	$html .= '<div class="result-data">';
+	$html .= '<h3><a href="' . $item['url_librivox'] .' ">' . create_full_title($item) . '</a></h3>';
+	$html .= '<p class="book-author"> ' . format_authors($item['authors'], FMT_AUTH_YEARS|FMT_AUTH_HTML|FMT_AUTH_LINK, 2) . '</p>';
+	$html .= '<p class="book-meta">' . 'Complete' . ' | ' . ucwords($item['project_type']) . ' | ' . $item['language'] . '</p>';
+	$html .= '</div></li>';
+	return $html;
+}
